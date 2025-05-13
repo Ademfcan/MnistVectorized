@@ -4,37 +4,46 @@ import Learning.LearningRateProvider;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.util.Arrays;
+import java.util.logging.Logger;
+
 public class Layer {
     protected INDArray weights;
     protected INDArray biases;
 
     protected INDArray activations;
     protected INDArray errorSignal;
+    protected INDArray v;
+
+    protected INDArray dLdWs;
+    protected INDArray dLdBs;
 
     protected Layer previous;
     protected Layer next;
 
-    private final ActivationFunction activationFunc;
-    private final LearningRateProvider learningRateProvider;
+    protected final ActivationFunction activationFunc;
+    protected final LearningRateProvider learningRateProvider;
 
-    private final int weightR;
-    private final int weightC;
+    private final int shapeIn;
+    private final int shapeOut;
 
-    public Layer(ActivationFunction activationFunc, LearningRateProvider learningRateProvider, int weightR, int weightC){
+    public Layer(ActivationFunction activationFunc, LearningRateProvider learningRateProvider, int shapeIn, int shapeOut){
         this.activationFunc = activationFunc;
         this.learningRateProvider = learningRateProvider;
-        this.weightR = weightR;
-        this.weightC = weightC;
+        this.shapeIn = shapeIn;
+        this.shapeOut = shapeOut;
 
-        createWeights(weightR, weightC);
+        createWeights(shapeIn, shapeOut);
+        this.dLdWs = Nd4j.zerosLike(weights);
+        this.dLdBs = Nd4j.zerosLike(biases);
+
     }
 
-    private void createWeights(int weightR, int weightC){
-        this.weights = Nd4j.create(weightR, weightC);
-        this.biases = Nd4j.create(weightR, 1);
+    private void createWeights(int shapeIn, int shapeOut){
+        this.weights = Nd4j.create(shapeOut, shapeIn);
+        this.biases = Nd4j.zeros(shapeOut, 1);
 
         activationFunc.initializeWeights(weights);
-        activationFunc.initializeWeights(biases);
     }
 
     public void setPrevious(Layer previous) {
@@ -46,27 +55,38 @@ public class Layer {
     }
 
 
-    public INDArray forward(){
-        INDArray v = weights.mmul(previous.activations).addColumnVector(biases);
+    public void forward(INDArray previousActivations){
+        v = weights.mmul(previousActivations).addColumnVector(biases);
         activations = activationFunc.func(v);
 
-        return activations;
+        if(next != null){
+            next.forward(activations);
+        }
+//        else{
+//            Logger.getGlobal().info("Layer has reached the end of forward propagation, next is null");
+//        }
     }
 
 
-    public INDArray backward(){
-        errorSignal = next.weights.transpose().mmul(next.errorSignal)
-                .mul(activationFunc.derivative(activations));
+    public void backward(INDArray nextErrorSignal, INDArray nextWeights){
+        errorSignal = nextWeights.transpose().mmul(nextErrorSignal)
+                .mul(activationFunc.derivative(v));
+        int batchSize = errorSignal.columns();
 
-        INDArray dLdW = errorSignal.mmul(previous.activations.transpose());
-        INDArray dLdB = errorSignal;
+        INDArray dLdW = errorSignal.mmul(previous.activations.transpose()).div(batchSize);
+        INDArray dLdB = errorSignal.sum(1).reshape(errorSignal.rows(), 1).div(batchSize);
 
         double learningRate = learningRateProvider.getLearningRate(this);
 
         weights.subi(dLdW.mul(learningRate));
         biases.subi(dLdB.mul(learningRate));
 
-        return errorSignal;
+        if(previous != null){
+            previous.backward(errorSignal, weights);
+        }
+//        else{
+//            Logger.getGlobal().info("Layer has reached the end of backpropagation, previous is null");
+//        }
     }
 
     public INDArray getWeights() {
@@ -81,6 +101,15 @@ public class Layer {
         return activations;
     }
 
+    public INDArray getPredictions() {
+        INDArray ret = Nd4j.zeros(activations.columns());
+        for(int i = 0; i< activations.columns(); i++){
+            ret.putScalar(i, activations.getColumn(i).argMax(0).getInt(0));
+        }
+
+        return ret;
+    }
+
     public INDArray getErrorSignal() {
         return errorSignal;
     }
@@ -93,12 +122,12 @@ public class Layer {
         return next;
     }
 
-    public int getWeightR() {
-        return weightR;
+    public int getShapeOut() {
+        return shapeOut;
     }
 
-    public int getWeightC() {
-        return weightC;
+    public int getShapeIn() {
+        return shapeIn;
     }
 
 
