@@ -3,28 +3,28 @@ import Activation.ActivationFunction;
 import Learning.LearningRateProvider;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.shade.jackson.annotation.JsonProperty;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class Layer {
     protected INDArray weights;
-    protected INDArray biases;
 
+    protected INDArray biases;
     protected INDArray activations;
+
     protected INDArray errorSignal;
     protected INDArray v;
-
-    protected INDArray dLdWs;
-    protected INDArray dLdBs;
-
     protected Layer previous;
     protected Layer next;
-
+    @JsonProperty("activationFunc")
     protected final ActivationFunction activationFunc;
+    @JsonProperty("learningRateProvider")
     protected final LearningRateProvider learningRateProvider;
 
     private final int shapeIn;
+
     private final int shapeOut;
 
     public Layer(ActivationFunction activationFunc, LearningRateProvider learningRateProvider, int shapeIn, int shapeOut){
@@ -34,11 +34,8 @@ public class Layer {
         this.shapeOut = shapeOut;
 
         createWeights(shapeIn, shapeOut);
-        this.dLdWs = Nd4j.zerosLike(weights);
-        this.dLdBs = Nd4j.zerosLike(biases);
 
     }
-
     private void createWeights(int shapeIn, int shapeOut){
         this.weights = Nd4j.create(shapeOut, shapeIn);
         this.biases = Nd4j.zeros(shapeOut, 1);
@@ -110,6 +107,14 @@ public class Layer {
         return ret;
     }
 
+    public void setWeights(INDArray weights) {
+        this.weights = weights;
+    }
+
+    public void setBiases(INDArray biases) {
+        this.biases = biases;
+    }
+
     public INDArray getErrorSignal() {
         return errorSignal;
     }
@@ -128,6 +133,14 @@ public class Layer {
 
     public int getShapeIn() {
         return shapeIn;
+    }
+
+    public ActivationFunction getActivationFunc() {
+        return activationFunc;
+    }
+
+    public LearningRateProvider getLearningRateProvider() {
+        return learningRateProvider;
     }
 
 

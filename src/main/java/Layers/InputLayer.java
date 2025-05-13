@@ -1,12 +1,12 @@
 package Layers;
 
-import Activation.Relu;
+import Activation.ActivationFunction;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 
 public class InputLayer extends Layer{
     public InputLayer(int inputShape) {
-        super(new Relu(), null, inputShape, inputShape);
+        super(ActivationFunction.RELU, null, inputShape, inputShape);
     }
 
     @Override

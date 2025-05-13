@@ -1,18 +1,14 @@
 package Layers;
 
-import Activation.Softmaxx;
+import Activation.ActivationFunction;
 import Learning.LearningRateProvider;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.INDArrayIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
-
-import java.util.Arrays;
 
 public class OutputLayer extends Layer{
 
     public OutputLayer(LearningRateProvider learningRateProvider, int shapeIn, int shapeOut) {
-        super(new Softmaxx(), learningRateProvider, shapeIn, shapeOut);
+        super(ActivationFunction.SOFTMAXX, learningRateProvider, shapeIn, shapeOut);
     }
 
     public void backward(int[] correctLabels){
@@ -26,9 +22,10 @@ public class OutputLayer extends Layer{
 
         INDArray dLdW = errorSignal.mmul(previous.activations.transpose()).div(batchSize);
         INDArray dLdB = errorSignal.sum(1).reshape(errorSignal.rows(), 1).div(batchSize);
-        dLdWs.addi(dLdW);
-        dLdBs.addi(dLdB);
 
+        double learningRate = learningRateProvider.getLearningRate(this);
+        weights.subi(dLdW.mul(learningRate));
+        biases.subi(dLdB.mul(learningRate));
 
         previous.backward(errorSignal, weights);
     }

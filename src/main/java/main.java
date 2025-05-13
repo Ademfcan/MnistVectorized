@@ -1,5 +1,4 @@
 import Activation.ActivationFunction;
-import Activation.Relu;
 import Data.MnistLoader;
 import Layers.InputLayer;
 import Layers.Layer;
@@ -9,6 +8,7 @@ import Learning.LearningRateProvider;
 import Network.NNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
@@ -18,15 +18,13 @@ public class main {
     public static void main(String[] args) throws IOException {
         int batchSize = 64;
         int numEpochs = 50;
-        int numTest = 5000;
 
-        ActivationFunction relu = new Relu();
-        LearningRateProvider constant = new ConstantLearningRate(0.005);
+        LearningRateProvider constant = new ConstantLearningRate(0.015);
         NNetwork network = new NNetwork(
                 new InputLayer(28 * 28),
-                new OutputLayer(constant, 100, 10),
-                new Layer(relu, constant, 28 * 28, 250),
-                new Layer(relu, constant, 250, 100)
+                new OutputLayer(constant, 128, 10),
+                new Layer(ActivationFunction.RELU, constant, 28 * 28, 128),
+                new Layer(ActivationFunction.RELU, constant, 128, 128)
         );
 
         MnistLoader loaderTrain = new MnistLoader(true);
@@ -74,7 +72,7 @@ public class main {
 
             // Evaluate on test set after each epoch
             int correct = 0, total = 0;
-            for (int i = 0; i < loaderTest.numEntries() && i < numTest; i++) {
+            for (int i = 0; i < loaderTest.numEntries(); i++) {
                 INDArray imageInput = loaderTest.getImg(i);
                 int correctLabel = loaderTest.getLabel(i);
                 network.runInference(imageInput);
@@ -88,5 +86,7 @@ public class main {
             Logger.getGlobal().info("Epoch " + (epoch + 1)
                     + " Test correct: " + correct + " / " + total + " = " + accuracy);
         }
+
+        network.save(new File("out.zip"));
     }
 }
