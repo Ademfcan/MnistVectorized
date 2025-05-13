@@ -11,14 +11,10 @@ public class OutputLayer extends Layer{
         super(ActivationFunction.SOFTMAXX, learningRateProvider, shapeIn, shapeOut);
     }
 
-    public void backward(int[] correctLabels){
-        int batchSize = correctLabels.length;
+    public void backward(INDArray expectedOutputs) {
+        int batchSize = expectedOutputs.columns();
 
-        INDArray oneHot = Nd4j.zerosLike(activations);
-        for(int i = 0; i<batchSize;i++){
-            oneHot.putScalar(correctLabels[i], i, 1.0f);
-        }
-        errorSignal = activations.sub(oneHot);
+        errorSignal = activations.sub(expectedOutputs);
 
         INDArray dLdW = errorSignal.mmul(previous.activations.transpose()).div(batchSize);
         INDArray dLdB = errorSignal.sum(1).reshape(errorSignal.rows(), 1).div(batchSize);

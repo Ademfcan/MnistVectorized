@@ -6,7 +6,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.IOException;
 
-public class MnistLoader {
+public class MnistLoader extends DataLoader{
     private final String TRAINIMG = "train-images.idx3-ubyte/train-images.idx3-ubyte";
     private final String TRAINLABEL = "train-labels.idx1-ubyte";
     private final String TESTIMG = "t10k-images.idx3-ubyte/t10k-images.idx3-ubyte";
@@ -24,7 +24,7 @@ public class MnistLoader {
         images = new INDArray[rawImages.length];
         for(int i = 0; i<images.length;i++){
             images[i] = Nd4j.create(rawImages[i])
-                    .reshape((long) rawImages[i][0].length * rawImages[i][0].length, 1).castTo(DataType.FLOAT).div(255);
+                    .reshape(784, 1).castTo(DataType.FLOAT).div(255);
         }
 
         if(labels.length != images.length){
@@ -33,11 +33,8 @@ public class MnistLoader {
 
     }
 
-    public INDArray getImg(int index){
-        return images[index];
-    }
-
-    public INDArray getImgBatch(int index, int batchSize){
+    @Override
+    public INDArray getFeatures(int index, int batchSize) {
         int upper = getMax(index, batchSize);
         int size = upper-index;
 
@@ -50,25 +47,46 @@ public class MnistLoader {
         return ret;
     }
 
-    public int getLabel(int index){
-        return labels[index];
-    }
-    public int[] getLabelBatch(int index, int batchSize){
-        int upper = getMax(index, batchSize);
-        int size = upper-index;
+    @Override
+    public INDArray getFeatures(int[] indexes) {
+        if(indexes.length < 1){
+            throw new IllegalStateException("Indexes array must contain at least one element!");
+        }
 
-        int[] ret = new int[size];
-
-        for(int i = index; i<upper; i++){
-            ret[i-index] = labels[i];
+        INDArray ret = Nd4j.create(images[indexes[0]].rows(), indexes.length);
+        for(int i = 0; i < indexes.length; i++){
+            int idx = indexes[i];
+            ret.putColumn(i, images[idx].getColumn(0));
         }
 
         return ret;
     }
 
-    private int getMax(int index, int batchSize){
-        int upper = index + batchSize;
-        return Math.min(upper, numEntries());
+    @Override
+    public INDArray getExpectedOutputs(int index, int batchSize) {
+        int upper = getMax(index, batchSize);
+        int size = upper-index;
+
+        INDArray oneHot = Nd4j.zeros(10, size);
+        for(int i = index; i<upper;i++){
+            oneHot.putScalar(labels[i], i-index, 1.0f);
+        }
+
+        return oneHot;
+    }
+
+    @Override
+    public INDArray getExpectedOutputs(int[] indexes) {
+        if(indexes.length < 1){
+            throw new IllegalStateException("Indexes array must contain at least one element!");
+        }
+        INDArray oneHot = Nd4j.create(10, indexes.length);
+        for(int i = 0; i < indexes.length; i++){
+            int idx = indexes[i];
+            oneHot.putScalar(labels[idx], i, 1);
+        }
+
+        return oneHot;
     }
 
     public int numEntries(){

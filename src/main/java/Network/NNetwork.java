@@ -59,8 +59,8 @@ public class NNetwork {
         inputLayer.forward(input);
     }
 
-    public void runBackprop(int[] correctLabelIds){
-        outputLayer.backward(correctLabelIds);
+    public void runBackprop(INDArray expectedOutputs){
+        outputLayer.backward(expectedOutputs);
     }
 
 
