@@ -1,6 +1,26 @@
 plugins {
     id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'application'
 }
+
+javafx {
+    version = "20"
+    modules = [ 'javafx.controls', 'javafx.fxml']
+}
+
+run {
+    jvmArgs '-ea',
+            '-Dprism.allowhidpi=false',
+            '-Dsun.java2d.dpiaware=false';
+}
+
+application{
+    mainClass = "main"
+}
+
+
+
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
@@ -20,3 +40,4 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
