@@ -12,12 +12,9 @@ import Training.EpochEndCondition;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 
 public class train {
     public static void main(String[] args) throws IOException {
-        int batchSize = 64;
-        int numEpochs = 20;
 
         LearningRateProvider constant = new ConstantLearningRate(0.015);
         NNetwork network = new NNetwork(
@@ -26,16 +23,17 @@ public class train {
                 new Layer(ActivationFunction.RELU, constant, 28 * 28, 512)
         );
 
-//        NNetwork network = NNetwork.fromZip(new File(Objects.
-//                requireNonNull(main.class.getClassLoader().getResource("out.zip")).getPath()));
 
-        MnistLoader loaderTrain = new MnistLoader(true);
-        MnistLoader loaderTest = new MnistLoader(false);
-        EndCondition maxEpochs = new EpochEndCondition(numEpochs);
-
+        MnistLoader loaderTrain = new MnistLoader("trainingdata/emnist-digits-train-images-idx3-ubyte",
+                "trainingdata/emnist-digits-train-labels-idx1-ubyte");
+        MnistLoader loaderTest = new MnistLoader("trainingdata/emnist-digits-test-images-idx3-ubyte",
+                "trainingdata/emnist-digits-test-labels-idx1-ubyte");
+        int batchSize = 64;
+        EndCondition maxEpochs = new EpochEndCondition(1);
         BatchedTrainer trainer = new BatchedTrainer(network, loaderTrain, loaderTest, batchSize, maxEpochs);
+
         trainer.train();
 
-        network.save(new File("Out512.zip"));
+        network.save(new File("models/Out512.zip"));
     }
 }

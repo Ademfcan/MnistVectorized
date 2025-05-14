@@ -1,7 +1,6 @@
 package Data;
 
 import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -42,8 +41,8 @@ public class UbyteReader {
     }
 
     public static void main(String[] args) throws IOException {
-        int[][][] images = readIDXImages("train-images.idx3-ubyte/train-images.idx3-ubyte");
-        int[] labels = readIDXLabels("train-labels.idx1-ubyte");
+        int[][][] images = readIDXImages("trainingdata/train-images.idx3-ubyte/train-images.idx3-ubyte");
+        int[] labels = readIDXLabels("trainingdata/train-labels.idx1-ubyte");
 
         System.out.println("First label: " + labels[0]);
         System.out.println("First image: " + Arrays.deepToString(images[0]));

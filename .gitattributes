@@ -1,0 +1,2 @@
+src/main/resources/models/** filter=lfs diff=lfs merge=lfs
+src/main/resources/trainingdata/** filter=lfs diff=lfs merge=lfs

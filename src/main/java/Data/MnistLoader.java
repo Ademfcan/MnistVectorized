@@ -7,17 +7,18 @@ import org.nd4j.linalg.factory.Nd4j;
 import java.io.IOException;
 
 public class MnistLoader extends DataLoader{
-    private final String TRAINIMG = "train-images.idx3-ubyte/train-images.idx3-ubyte";
-    private final String TRAINLABEL = "train-labels.idx1-ubyte";
-    private final String TESTIMG = "t10k-images.idx3-ubyte/t10k-images.idx3-ubyte";
-    private final String TESTLABEL = "t10k-labels.idx1-ubyte";
+    private static final String TRAINIMG = "trainingdata/train-images.idx3-ubyte/train-images.idx3-ubyte";
+    private static final String TRAINLABEL = "trainingdata/train-labels.idx1-ubyte";
+    private static final String TESTIMG = "trainingdata/t10k-images.idx3-ubyte/t10k-images.idx3-ubyte";
+    private static final String TESTLABEL = "trainingdata/t10k-labels.idx1-ubyte";
 
     private INDArray[] images;
     private int[] labels;
     public MnistLoader(boolean isTrain) throws IOException {
-        String img = isTrain ? TRAINIMG : TESTIMG;
-        String label = isTrain ? TRAINLABEL : TESTLABEL;
+        this(isTrain ? TRAINIMG : TESTIMG, isTrain ? TRAINLABEL : TESTLABEL);
+    }
 
+    public MnistLoader(String img, String label) throws IOException {
         labels = UbyteReader.readIDXLabels(label);
 
         int[][][] rawImages = UbyteReader.readIDXImages(img);
@@ -32,6 +33,8 @@ public class MnistLoader extends DataLoader{
         }
 
     }
+
+
 
     @Override
     public INDArray getFeatures(int index, int batchSize) {

@@ -2,7 +2,6 @@ package Gui;
 
 import Data.MnistLoader;
 import Network.NNetwork;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -67,9 +66,10 @@ public class MainScreenController implements Initializable {
 
         try {
             network = NNetwork.fromZip(new File(Objects.
-                    requireNonNull(getClass().getClassLoader().getResource("Out512.zip")).getPath()));
+                    requireNonNull(getClass().getClassLoader().getResource("models/Out512.zip")).getPath()));
 
-            loader = new MnistLoader(true);
+            loader = new MnistLoader("trainingdata/emnist-digits-train-images-idx3-ubyte",
+                    "trainingdata/emnist-digits-train-labels-idx1-ubyte");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -199,7 +199,8 @@ public class MainScreenController implements Initializable {
     }
 
     private INDArray getInput(){
-        return Nd4j.create(applyBinaryDilation(data)).reshape(784,1);
+//        return Nd4j.create(applyBinaryDilation(data)).reshape(784,1);
+        return Nd4j.create(data).reshape(784,1);
     }
 
     private float[][] applyGaussianBlur(float[][] input) {
