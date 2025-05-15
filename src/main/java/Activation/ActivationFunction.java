@@ -33,7 +33,7 @@ public enum ActivationFunction {
 
         @Override
         public INDArray derivative(INDArray v) {
-            // wont be used
+            // wont be used (todo still add)
             return null;
         }
     };

@@ -39,12 +39,4 @@ public class UbyteReader {
             return labels;
         }
     }
-
-    public static void main(String[] args) throws IOException {
-        int[][][] images = readIDXImages("trainingdata/train-images.idx3-ubyte/train-images.idx3-ubyte");
-        int[] labels = readIDXLabels("trainingdata/train-labels.idx1-ubyte");
-
-        System.out.println("First label: " + labels[0]);
-        System.out.println("First image: " + Arrays.deepToString(images[0]));
-    }
 }

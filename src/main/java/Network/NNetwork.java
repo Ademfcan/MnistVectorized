@@ -32,7 +32,7 @@ public class NNetwork {
         setConnections();
     }
 
-    public boolean assertShape(InputLayer inputLayer, OutputLayer outputLayer, Layer[] hiddenLayers){
+    private boolean assertShape(InputLayer inputLayer, OutputLayer outputLayer, Layer[] hiddenLayers){
         boolean match = true;
 
         for(int i = 1; i<hiddenLayers.length; i++){
@@ -42,7 +42,7 @@ public class NNetwork {
         return match && (hiddenLayers[hiddenLayers.length-1].getShapeOut() == outputLayer.getShapeIn());
     }
 
-    public void setConnections(){
+    private void setConnections(){
         inputLayer.setNext(hiddenLayers[0]);
         hiddenLayers[0].setPrevious(inputLayer);
 
@@ -55,6 +55,23 @@ public class NNetwork {
         outputLayer.setPrevious(hiddenLayers[hiddenLayers.length-1]);
     }
 
+    /**
+     * Each layer, apart from the input layer, has weights and biases.
+     * The number of weights for each layer is the shapeIn*shapeOut (matrix), and
+     * the number of biases for each layer is shapeOut
+     */
+    public double getNumParams(){
+        double count = 0;
+        for(Layer layer : hiddenLayers){
+            count += layer.getShapeIn() * layer.getShapeOut(); // weights
+            count += layer.getShapeOut(); // biases
+        }
+
+        count += outputLayer.getShapeIn() * outputLayer.getShapeOut(); // weights
+        count += outputLayer.getShapeOut(); // biases
+        return count;
+    }
+
     public void runInference(INDArray input){
         inputLayer.forward(input);
     }
@@ -63,122 +80,12 @@ public class NNetwork {
         outputLayer.backward(expectedOutputs);
     }
 
-
-    public void save(File zipFile) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        List<LayerConfig> layerConfigs = new ArrayList<>();
-
-        FileOutputStream fos = new FileOutputStream(zipFile);
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-        int layerIndex = 0;
-
-        // Save input layer config (no weights/biases)
-        layerConfigs.add(new LayerConfig("input",
-                inputLayer.getShapeIn(),
-                inputLayer.getShapeOut(),
-                null,
-                null,
-                null,
-                null
-        ));
-
-        // Save hidden layers
-        for (Layer layer : hiddenLayers) {
-            String weightFile = "layer" + layerIndex + "_weights.bin";
-            String biasFile = "layer" + layerIndex + "_biases.bin";
-
-            writeINDArrayToZip(zipOut, weightFile, layer.getWeights());
-            writeINDArrayToZip(zipOut, biasFile, layer.getBiases());
-
-            layerConfigs.add(new LayerConfig("dense",
-                    layer.getShapeIn(),
-                    layer.getShapeOut(),
-                    layer.getActivationFunc().toString(),
-                    layer.getLearningRateProvider(),
-                    weightFile,
-                    biasFile
-            ));
-
-            layerIndex++;
-        }
-
-        // Save output layer
-        String weightFile = "output_weights.bin";
-        String biasFile = "output_biases.bin";
-
-        writeINDArrayToZip(zipOut, weightFile, outputLayer.getWeights());
-        writeINDArrayToZip(zipOut, biasFile, outputLayer.getBiases());
-
-        layerConfigs.add(new LayerConfig("output",
-                outputLayer.getShapeIn(),
-                outputLayer.getShapeOut(),
-                outputLayer.getActivationFunc().toString(),
-                outputLayer.getLearningRateProvider(),
-                weightFile,
-                biasFile
-        ));
-
-        // Save model config as JSON
-        ZipEntry configEntry = new ZipEntry("model.json");
-        zipOut.putNextEntry(configEntry);
-        zipOut.write(mapper.writeValueAsBytes(layerConfigs));
-        zipOut.closeEntry();
-
-        zipOut.close();
-        fos.close();
+    public void save(File outputFile) throws IOException {
+        ZipHelper.save(this, outputFile);
     }
 
-    private void writeINDArrayToZip(ZipOutputStream zipOut, String name, INDArray arr) throws IOException {
-        ZipEntry entry = new ZipEntry(name);
-        zipOut.putNextEntry(entry);
-        DataOutputStream dos = new DataOutputStream(zipOut);
-        Nd4j.write(arr, dos);
-        zipOut.closeEntry();
-    }
 
-    public static NNetwork fromZip(File zipFile) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        List<LayerConfig> configs;
-        INDArray[] weightsAndBiases;
 
-        try (ZipFile zip = new ZipFile(zipFile)) {
-            ZipEntry configEntry = zip.getEntry("model.json");
-            InputStream configStream = zip.getInputStream(configEntry);
-            configs = mapper.readValue(configStream,
-                    mapper.getTypeFactory().constructCollectionType(List.class, LayerConfig.class));
-
-            weightsAndBiases = new INDArray[configs.size() * 2]; // each layer (except input) has weights and biases
-
-            int index = 0;
-            for (LayerConfig cfg : configs) {
-                if (cfg.weightFile != null && cfg.biasFile != null) {
-                    weightsAndBiases[index++] = Nd4j.read(zip.getInputStream(zip.getEntry(cfg.weightFile)));
-                    weightsAndBiases[index++] = Nd4j.read(zip.getInputStream(zip.getEntry(cfg.biasFile)));
-                }
-            }
-        }
-
-        // Construct actual layers from configs (mock example — you'll need factory logic here)
-        InputLayer inputLayer = new InputLayer(configs.get(0).shapeOut);
-        List<Layer> hidden = new ArrayList<>();
-        int wi = 0;
-
-        for (int i = 1; i < configs.size() - 1; i++) {
-            LayerConfig cfg = configs.get(i);
-            Layer layer = new Layer(ActivationFunction.valueOf(cfg.activation), cfg.learningRateProvider, cfg.shapeIn, cfg.shapeOut);
-            layer.setWeights(weightsAndBiases[wi++]);
-            layer.setBiases(weightsAndBiases[wi++]);
-            hidden.add(layer);
-        }
-
-        LayerConfig outCfg = configs.get(configs.size() - 1);
-        OutputLayer outputLayer = new OutputLayer(outCfg.learningRateProvider, outCfg.shapeIn, outCfg.shapeOut);
-        outputLayer.setWeights(weightsAndBiases[wi++]);
-        outputLayer.setBiases(weightsAndBiases[wi]);
-
-        return new NNetwork(inputLayer, outputLayer, hidden.toArray(new Layer[0]));
-    }
 
 
 

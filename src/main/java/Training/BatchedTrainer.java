@@ -63,6 +63,7 @@ public class BatchedTrainer {
                     Logger.getGlobal().info("Epoch " + (epoch + 1) + " batch " + batchStart + "/" + numTrain);
                 }
             }
+            Logger.getGlobal().info("Epoch " + (epoch + 1) + " batch finished " + numTrain + "/" + numTrain);
 
             // Evaluate on test set after each epoch
             int correct = 0, total = 0;

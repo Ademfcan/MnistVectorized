@@ -16,9 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
-public class train {
+public class example {
     /**
-     * How the default model was created
+     * Example method for training on the emnist-digits dataset,
+     * with custom preprocessing to threshold the float inputs of 0-1 by 0.5
+     * [0-1] -> 0 if <= 0.5 or 1 if > 0.5
      */
     public static void main(String[] args) throws IOException {
         // constant learning rate of 0.015
@@ -33,20 +35,32 @@ public class train {
                 new Layer(ActivationFunction.RELU, constant, 28 * 28, 128),
                 new Layer(ActivationFunction.RELU, constant, 128, 128)
         );
-        // mnist training data included by default
-        MnistLoader loaderTrain = new MnistLoader(true);
-        MnistLoader loaderTest = new MnistLoader(false);
 
+        // binarization of data with threshold of 0.5
+        // x < 0.5 = 0
+        // x > 0.5 = 1
+        Function<INDArray, INDArray> binarize05 =
+                (arr) -> {return Transforms.step(arr.sub(0.5));};
+
+        // create test and train datasets
+        MnistLoader loaderTrain = new MnistLoader("path-to-emnist-train-images-ubyte",
+                "path-to-emnist-train-labels-ubyte",
+                binarize05); // preprocess func
+        MnistLoader loaderTest = new MnistLoader("path-to-emnist-test-images-ubyte",
+                "path-to-emnist-test-labels-ubyte",
+                binarize05); // preprocess func
+        // can be any batch size
         int batchSize = 64;
-        // model was trained on 50 epochs
-        EndCondition maxEpochs = new EpochEndCondition(50);
+        // simple end condition to stop after 15 epochs
+        EndCondition maxEpochs = new EpochEndCondition(15);
+        // create the trainer with the options we set
         BatchedTrainer trainer = new BatchedTrainer(network, loaderTrain,
                 loaderTest, batchSize, maxEpochs);
 
         // train the network
         trainer.train();
 
-        // save output
-        network.save(new File("out.zip"));
+        // once finished, save output to zip file
+        network.save(new File("model.zip"));
     }
 }

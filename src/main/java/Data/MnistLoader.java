@@ -1,10 +1,14 @@
 package Data;
 
+import javafx.scene.chart.CategoryAxis;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 public class MnistLoader extends DataLoader{
     private static final String TRAINIMG = "trainingdata/train-images.idx3-ubyte/train-images.idx3-ubyte";
@@ -17,8 +21,15 @@ public class MnistLoader extends DataLoader{
     public MnistLoader(boolean isTrain) throws IOException {
         this(isTrain ? TRAINIMG : TESTIMG, isTrain ? TRAINLABEL : TESTLABEL);
     }
+    public MnistLoader(boolean isTrain, Function<INDArray,INDArray> preprocess) throws IOException {
+        this(isTrain ? TRAINIMG : TESTIMG, isTrain ? TRAINLABEL : TESTLABEL, preprocess);
+    }
 
     public MnistLoader(String img, String label) throws IOException {
+        this(img, label, null);
+    }
+
+    public MnistLoader(String img, String label, Function<INDArray,INDArray> preprocess) throws IOException {
         labels = UbyteReader.readIDXLabels(label);
 
         int[][][] rawImages = UbyteReader.readIDXImages(img);
@@ -26,6 +37,10 @@ public class MnistLoader extends DataLoader{
         for(int i = 0; i<images.length;i++){
             images[i] = Nd4j.create(rawImages[i])
                     .reshape(784, 1).castTo(DataType.FLOAT).div(255);
+
+            if(preprocess != null){
+                images[i] = preprocess.apply(images[i]);
+            }
         }
 
         if(labels.length != images.length){

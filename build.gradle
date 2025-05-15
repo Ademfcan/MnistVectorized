@@ -6,23 +6,9 @@ plugins {
 
 javafx {
     version = "20"
-    modules = [ 'javafx.controls', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.fxml']
 }
 
-run {
-    jvmArgs '-ea',
-            '-Dprism.allowhidpi=false',
-            '-Dsun.java2d.dpiaware=false';
-}
-
-application{
-    mainClass = "main"
-}
-
-
-
-
-group = 'org.example'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -37,7 +23,39 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 }
 
+//java {
+//    toolchain {
+//        languageVersion = JavaLanguageVersion.of(20)
+//    }
+//}
+
+application {
+    mainClass = 'main'
+}
+
+run {
+    jvmArgs '-ea',
+            '-Dprism.allowhidpi=false',
+            '-Dsun.java2d.dpiaware=false'
+}
+
+jar {
+    archiveClassifier.set('fat')
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get(),
+                'Application-Args': '-Dprism.allowhidpi=false -Dsun.java2d.dpiaware=false'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveFileName = 'mnistdetector-fat.jar'
+
+    from sourceSets.main.output
+}
+
 test {
     useJUnitPlatform()
 }
-
