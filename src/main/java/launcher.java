@@ -10,8 +10,8 @@ import javafx.stage.Stage;
 public class launcher extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("layout/main.fxml"));
-        Parent root = loader.load();
+        FXMLLoader loader = new FXMLLoader();
+        Parent root = loader.load(getClass().getResourceAsStream("layout/main.fxml"));
 
         // Stop thread on window close
         MainScreenController controller = loader.getController();
