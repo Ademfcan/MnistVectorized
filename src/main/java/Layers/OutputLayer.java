@@ -7,8 +7,8 @@ import org.nd4j.linalg.factory.Nd4j;
 
 public class OutputLayer extends Layer{
 
-    public OutputLayer(LearningRateProvider learningRateProvider, int shapeIn, int shapeOut) {
-        super(ActivationFunction.SOFTMAXX, learningRateProvider, shapeIn, shapeOut);
+    public OutputLayer(LearningRateProvider learningRateProvider, int layerSize) {
+        super(ActivationFunction.SOFTMAXX, learningRateProvider, layerSize);
     }
 
     public void backward(INDArray expectedOutputs) {

@@ -23,19 +23,22 @@ public class Layer {
     @JsonProperty("learningRateProvider")
     protected final LearningRateProvider learningRateProvider;
 
-    private final int shapeIn;
+    private int shapeIn;
+    private int shapeOut;
 
-    private final int shapeOut;
-
-    public Layer(ActivationFunction activationFunc, LearningRateProvider learningRateProvider, int shapeIn, int shapeOut){
+    public Layer(ActivationFunction activationFunc, LearningRateProvider learningRateProvider, int layerSize){
         this.activationFunc = activationFunc;
         this.learningRateProvider = learningRateProvider;
-        this.shapeIn = shapeIn;
-        this.shapeOut = shapeOut;
-
-        createWeights(shapeIn, shapeOut);
+        this.shapeOut = layerSize;
 
     }
+
+    public void initInputShape(int shapeIn){
+        this.shapeIn = shapeIn;
+
+        createWeights(shapeIn, shapeOut);
+    }
+
     private void createWeights(int shapeIn, int shapeOut){
         this.weights = Nd4j.create(shapeOut, shapeIn);
         this.biases = Nd4j.zeros(shapeOut, 1);
@@ -128,6 +131,10 @@ public class Layer {
     }
 
     public int getShapeOut() {
+        return shapeOut;
+    }
+
+    public int getLayerSize() {
         return shapeOut;
     }
 

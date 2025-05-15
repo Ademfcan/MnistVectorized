@@ -27,8 +27,7 @@ public class ZipHelper {
 
         // Save input layer config (no weights/biases)
         layerConfigs.add(new LayerConfig("input",
-                network.inputLayer.getShapeIn(),
-                network.inputLayer.getShapeOut(),
+                network.inputLayer.getLayerSize(),
                 null,
                 null,
                 null,
@@ -44,8 +43,7 @@ public class ZipHelper {
             writeINDArrayToZip(zipOut, biasFile, layer.getBiases());
 
             layerConfigs.add(new LayerConfig("dense",
-                    layer.getShapeIn(),
-                    layer.getShapeOut(),
+                    layer.getLayerSize(),
                     layer.getActivationFunc().toString(),
                     layer.getLearningRateProvider(),
                     weightFile,
@@ -63,8 +61,7 @@ public class ZipHelper {
         writeINDArrayToZip(zipOut, biasFile, network.outputLayer.getBiases());
 
         layerConfigs.add(new LayerConfig("output",
-                network.outputLayer.getShapeIn(),
-                network.outputLayer.getShapeOut(),
+                network.outputLayer.getLayerSize(),
                 network.outputLayer.getActivationFunc().toString(),
                 network.outputLayer.getLearningRateProvider(),
                 weightFile,
@@ -128,24 +125,31 @@ public class ZipHelper {
             }
         }
 
-        // Construct actual layers from configs (mock example — you'll need factory logic here)
-        InputLayer inputLayer = new InputLayer(configs.get(0).shapeOut);
+        // Build the layers without calling setWeights/setBiases yet
+        InputLayer inputLayer = new InputLayer(configs.get(0).layerSize);
         List<Layer> hidden = new ArrayList<>();
-        int wi = 0;
 
         for (int i = 1; i < configs.size() - 1; i++) {
             LayerConfig cfg = configs.get(i);
-            Layer layer = new Layer(ActivationFunction.valueOf(cfg.activation), cfg.learningRateProvider, cfg.shapeIn, cfg.shapeOut);
-            layer.setWeights(weightsAndBiases[wi++]);
-            layer.setBiases(weightsAndBiases[wi++]);
+            Layer layer = new Layer(ActivationFunction.valueOf(cfg.activation), cfg.learningRateProvider, cfg.layerSize);
             hidden.add(layer);
         }
 
         LayerConfig outCfg = configs.get(configs.size() - 1);
-        OutputLayer outputLayer = new OutputLayer(outCfg.learningRateProvider, outCfg.shapeIn, outCfg.shapeOut);
+        OutputLayer outputLayer = new OutputLayer(outCfg.learningRateProvider, outCfg.layerSize);
+
+        // Construct the network
+        NNetwork network = new NNetwork(inputLayer, outputLayer, hidden.toArray(new Layer[0]));
+
+        // assign weights and biases
+        int wi = 0;
+        for (Layer layer : hidden) {
+            layer.setWeights(weightsAndBiases[wi++]);
+            layer.setBiases(weightsAndBiases[wi++]);
+        }
         outputLayer.setWeights(weightsAndBiases[wi++]);
         outputLayer.setBiases(weightsAndBiases[wi]);
 
-        return new NNetwork(inputLayer, outputLayer, hidden.toArray(new Layer[0]));
+        return network;
     }
 }

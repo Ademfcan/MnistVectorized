@@ -29,9 +29,9 @@ public class train {
         // output 10 clases for numbers 0-9
         NNetwork network = new NNetwork(
                 new InputLayer(28 * 28),
-                new OutputLayer(constant, 128, 10),
-                new Layer(ActivationFunction.RELU, constant, 28 * 28, 128),
-                new Layer(ActivationFunction.RELU, constant, 128, 128)
+                new OutputLayer(constant, 10),
+                new Layer(ActivationFunction.RELU, constant, 128),
+                new Layer(ActivationFunction.RELU, constant, 128)
         );
         // mnist training data included by default
         MnistLoader loaderTrain = new MnistLoader(true);
@@ -39,7 +39,7 @@ public class train {
 
         int batchSize = 64;
         // model was trained on 50 epochs
-        EndCondition maxEpochs = new EpochEndCondition(50);
+        EndCondition maxEpochs = new EpochEndCondition(1);
         BatchedTrainer trainer = new BatchedTrainer(network, loaderTrain,
                 loaderTest, batchSize, maxEpochs);
 

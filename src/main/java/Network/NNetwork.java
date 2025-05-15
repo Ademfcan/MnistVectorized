@@ -22,24 +22,19 @@ public class NNetwork {
     public final Layer[] hiddenLayers;
 
     public NNetwork(InputLayer inputLayer, OutputLayer outputLayer, Layer... hiddenLayers){
-        if(!assertShape(inputLayer, outputLayer, hiddenLayers)){
-            throw new IllegalArgumentException("All layer shapes must match!");
-        }
-
         this.inputLayer = inputLayer;
         this.outputLayer = outputLayer;
         this.hiddenLayers = hiddenLayers;
+        connectShapes();
         setConnections();
     }
 
-    private boolean assertShape(InputLayer inputLayer, OutputLayer outputLayer, Layer[] hiddenLayers){
-        boolean match = true;
-
+    private void connectShapes() {
+        hiddenLayers[0].initInputShape(inputLayer.getShapeOut());
         for(int i = 1; i<hiddenLayers.length; i++){
-            match = match && (hiddenLayers[i-1].getShapeOut() == hiddenLayers[i].getShapeIn());
+            hiddenLayers[i].initInputShape(hiddenLayers[i-1].getShapeOut());
         }
-
-        return match && (hiddenLayers[hiddenLayers.length-1].getShapeOut() == outputLayer.getShapeIn());
+        outputLayer.initInputShape(hiddenLayers[hiddenLayers.length-1].getShapeOut());
     }
 
     private void setConnections(){

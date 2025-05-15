@@ -31,9 +31,9 @@ public class example {
         // output 10 clases for numbers 0-9
         NNetwork network = new NNetwork(
                 new InputLayer(28 * 28),
-                new OutputLayer(constant, 128, 10),
-                new Layer(ActivationFunction.RELU, constant, 28 * 28, 128),
-                new Layer(ActivationFunction.RELU, constant, 128, 128)
+                new OutputLayer(constant, 10),
+                new Layer(ActivationFunction.RELU, constant, 128),
+                new Layer(ActivationFunction.RELU, constant, 128)
         );
 
         // binarization of data with threshold of 0.5

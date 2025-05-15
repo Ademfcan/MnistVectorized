@@ -6,7 +6,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 
 public class InputLayer extends Layer{
     public InputLayer(int inputShape) {
-        super(ActivationFunction.RELU, null, inputShape, inputShape);
+        super(ActivationFunction.RELU, null, inputShape);
     }
 
     @Override
