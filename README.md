@@ -13,6 +13,7 @@ To use this project, please clone the repository
 git clone https://github.com/Ademfcan/MnistVectorized.git
 cd MnistVectorized
 ```
+If you just want to try it out, you can run the jar file in the [releases section](https://github.com/Ademfcan/MnistVectorized/releases/)
 
 Once there, there are two main things you can do. Train a new model, or use the GUI with a existing model.
 
@@ -96,7 +97,7 @@ For example here is how to train a model from the emnist (extended-mnist) datase
 ```
 
 ## Using a model in the GUI
-To run the GUI, you can either run the jar from the [releases section](), or run the command:
+To run the GUI, you can either run the jar from the [releases section](https://github.com/Ademfcan/MnistVectorized/releases/), or run the command:
 ```shell
 #windows
 .\gradlew run
