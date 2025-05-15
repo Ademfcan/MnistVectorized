@@ -22,7 +22,7 @@ Creating a new model is simple:
 1. Define your layers
 2. Define a data loader
 3. Pick your learning rate (can be dynamic) 
-4. Pick how to stop training (after n epochs, or when accuracy plateaus, etc
+4. Pick how to stop training (after n epochs, or when accuracy plateaus, etc)
 5. Train your model
 
 For example here is how to train a model from the emnist (extended-mnist) dataset, with custom input preprocessing
