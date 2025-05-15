@@ -53,8 +53,6 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveFileName = 'mnistdetector-fat.jar'
 
-    exclude('trainingdata/**')
-
     from sourceSets.main.output
 }
 
