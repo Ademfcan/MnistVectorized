@@ -4,7 +4,7 @@
 The last time I attempted this I had not taken linear algebra, and thus implemented the network completely elementwise.
 No matrix multiplications, etc. As you can imagine, there were some gremlins in my code I could never get rid of,
 and I plateaued at 80% accuracy. Quite bad. However now with linear algebra in my toolbox, I can properly complete
-the beginners challenge of implementing a neural network from scratch. After 50 epochs, I can currently get around 97.7%
+the beginners challenge of implementing a neural network from scratch. After 10 epochs, I can currently get around 97.7%
 accuracy with 2 hidden layers of 128 neurons each. Not bad!
 
 ## Getting Started
